@@ -1,0 +1,131 @@
+# Configuration
+
+VERSION = @PACKAGE_VERSION@
+
+OCAMLC      = OCAMLRUNPARAM= ocamlfind ocamlc
+OCAMLOPT    = OCAMLRUNPARAM= ocamlfind ocamlopt -thread
+OCAMLDEP    = OCAMLRUNPARAM= ocamlfind ocamldep
+QTEST       = qtest
+
+#WARNS      = -w -40+27
+OCAMLFLAGS = @OCAMLFLAGS@ -I src $(WARNS) -annot -bin-annot
+
+ifdef NDEBUG
+OCAMLFLAGS += -noassert -O2
+else
+OCAMLFLAGS += -g
+endif
+
+PACKAGES = \
+	xml-light
+
+SOURCES = \
+	src/okmlType.ml \
+	src/okml.ml
+
+INSTALLED = \
+	META \
+	src/okml.cma \
+	src/okml.cmxa
+
+prefix = @prefix@
+
+.PHONY: doc clean all dep install uninstall reinstall \
+        unit-check check loc
+
+# Main targets
+
+all: $(INSTALLED)
+
+doc:
+	echo 'TODO: a documentation'
+
+# Generic rules
+
+.SUFFIXES: .ml .cmi .cmo .cmx .cmxs .cmt .annot .type .js
+
+%.cmx %.cmt %.cmi %.annot: %.ml
+	@echo 'Compiling $@ (native)'
+	$(OCAMLOPT) $(OCAMLFLAGS) -package '$(PACKAGES)' -c $<
+
+%.cmo %.cmt %.cmi %.annot: %.ml
+	@echo 'Compiling $@ (bytecode)'
+	$(OCAMLC) $(OCAMLFLAGS) -package '$(PACKAGES)' -c $< -o $@
+
+# Dependencies
+
+dep:
+	@$(RM) .depend
+	@$(MAKE) .depend
+
+.depend:
+	@echo 'Generating dependencies'
+	@$(OCAMLDEP) -I src \
+	   -package '$(PACKAGES)' $(filter %.ml, $(SOURCES)) > $@
+
+include .depend
+
+# Compiling
+
+src/okml.cmxa: $(filter %.cmx, $(SOURCES:.ml=.cmx))
+	@echo 'Compiling $@ (native) (from $^)'
+	$(OCAMLOPT) $(OCAMLFLAGS) -a -package '$(PACKAGES)' $^ -o $@
+
+src/okml.cma: $(filter %.cmo, $(SOURCES:.ml=.cmo))
+	@echo 'Compiling $@ (bytecode)'
+	$(OCAMLC) $(OCAMLFLAGS) -a -package '$(PACKAGES)' $^ -o $@
+
+# Tests
+
+TESTABLE_SOURCES = \
+	src/okml.ml
+
+# For the actual command line building all_tests.byte
+LINKED_FOR_TESTS = \
+	src/okml.ml
+
+all_tests.ml: $(TESTABLE_SOURCES)
+	$(QTEST) --shuffle -o $@ extract $^
+
+all_tests.byte: \
+		$(filter %.cmo,$(LINKED_FOR_TESTS:.ml=.cmo)) \
+		all_tests.ml
+	$(OCAMLC) $(OCAMLFLAGS) -I src -linkpkg -package '$(PACKAGES),qcheck' $(filter %.cmo, $^) $(filter %.ml, $^) -o $@
+
+unit-check: all_tests.byte
+	@TZ=CET OCAMLRUNPARAM=b ./all_tests.byte -bt
+
+check: unit-check
+
+
+# Installation
+
+install-lib: META
+	ocamlfind install okml $^
+
+install: install-bin install-lib
+
+uninstall:
+	@echo Uninstalling
+	@ocamlfind remove okml
+
+reinstall: uninstall install
+
+# Cleaning
+
+clean:
+	@echo 'Cleaning all build files'
+	@for d in src; do \
+	  $(RM) $$d/*.cmo $$d/*.s $$d/*.annot $$d/*.o $$d/*.cmt ;\
+	  $(RM) $$d/*.cma $$d/*.cmx $$d/*.cmxa $$d/*.cmxs $$d/*.cmi ;\
+	  $(RM) $$d/*.opt $$d/*.byte $$d/*.top ;\
+	 done
+	@$(RM) *.opt *.byte *.top all_tests.* *.html perf.data* gmon.out
+	@$(RM) oUnit-anon.cache qtest.targets.log .depend
+
+# Misc
+
+loc:
+	@find . -\( -name '*.ml' -o -name '*.mli' -o -name '*.c' -o -name '*.h' -\) | xargs cat | wc -l
+
+

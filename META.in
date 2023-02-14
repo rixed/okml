@@ -1,0 +1,5 @@
+description = "Simple KML file generator"
+version = "@PACKAGE_VERSION@"
+requires = "xml-light"
+archive(byte) = "okml.cma"
+archive(native) = "okml.cmxa"

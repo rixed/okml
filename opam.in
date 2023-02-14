@@ -1,0 +1,20 @@
+opam-version: "2.0"
+version: "@PACKAGE_VERSION@"
+name: "okml"
+maintainer: "rixed-opam@happyleptic.org"
+authors: "rixed-opam@happyleptic.org"
+homepage: "https://github.com/rixed/okml"
+bug-reports: "https://github.com/rixed/okml/issues"
+dev-repo: "git+https://github.com/rixed/okml.git"
+synopsis: "Simple generator for KML files"
+build: [
+  ["./configure"]
+  [make]
+  [make "check"] {with-test}
+]
+install: [make "bin_dir=%{bin}%" "install"]
+remove: [make "bin_dir=%{bin}%" "uninstall"]
+depends: [
+  "ocamlfind" {build & >= "1.8.0"}
+  "xml-light"
+]
