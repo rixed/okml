@@ -204,8 +204,8 @@ type time_primitive =
  * latitude, and altitude. The altitude component is optional. Do not include
  * spaces within a tuple. The last coordinate must be the same as the first
  * coordinate. Coordinates are expressed in decimal degrees only. *)
-type coordinate =
-  { lat : float ; lon : float ; alt : float option }
+type coordinates =
+  { lat : float ; lon : float ; alt : float }
 
 module Location =
 struct
@@ -256,7 +256,7 @@ struct
   type t =
     { id : object_id ;
       extrude : bool ;
-      tesselate : bool ;
+      tessellate : bool ;
       altitude_mode : altitude_mode ;
       (* An integer value that specifies the order for drawing multiple line
        * strings. LineStrings drawn first may be partially or fully obscured by
@@ -264,7 +264,7 @@ struct
        * conjunction with the <gx:outerColor> and <gx:outerWidth> elements in
        * <LineStyle> when dual-colored lines cross each other. *)
       draw_order : int ;
-      coordinates : coordinate array }
+      coordinates : coordinates array }
 end
 
 module LinearRing =
@@ -286,9 +286,9 @@ struct
        * clampToGround or clampToSeaFloor. Very large LinearRings should enable
        * tessellation so that they follow the curvature of the earth (otherwise,
        * they may go underground and be hidden). *)
-      tesselate : bool ;
+      tessellate : bool ;
       altitude_mode : altitude_mode ;
-      coordinates : coordinate array }
+      coordinates : coordinates array }
 end
 
 module Point =
@@ -308,7 +308,7 @@ struct
       altitude_mode : altitude_mode ;
       (* A single tuple consisting of floating point values for longitude,
        * latitude, and altitude. *)
-      coordinates : coordinate }
+      coordinates : coordinates }
 end
 
 module Polygon =
@@ -454,54 +454,47 @@ type alias =
   { target_href : string ;
     source_href : string }
 
+module Model =
+struct
+  (* A 3D object described in a COLLADA file (referenced in the <Link> tag).
+   * COLLADA files have a .dae file extension. Models are created in their own
+   * coordinate space and then located, positioned, and scaled in Google Earth.
+   * See the "Topics in KML" page on Models for more detail. *)
+  type t =
+    { id : object_id ;
+      altitude_mode : altitude_mode ;
+      location : Location.t ;
+      (* Describes rotation of a 3D model's coordinate system to position the
+       * object in Google Earth. *)
+      orientation : Orientation.t ;
+      (* Scales a model along the x, y, and z axes in the model's coordinate
+       * space. *)
+      scale : Scale.t ;
+      (* Specifies the file to load and optional refresh parameters. *)
+      link : Link.t ;
+      (* Specifies 0 or more <Alias> elements, each of which is a mapping for the
+       * texture file path from the original Collada file to the KML or KMZ file
+       * that contains the Model. This element allows you to move and rename
+       * texture files without having to update the original Collada file that
+       * references those textures. One <ResourceMap> element can contain
+       * multiple mappings from different (source) Collada files into the same
+       * (target) KMZ file. *)
+      resource_map : alias list }
+end
+
 type geometry =
   | Point of Point.t
   | LineString of LineString.t
   | LinearRing of LinearRing.t
   | Polygon of Polygon.t
   | MultiGeometry of multi_geometry
-  | Model of model
+  | Model of Model.t
 
 (* A container for zero or more geometry primitives associated with the same
  * feature. *)
 and multi_geometry =
   { id : object_id ;
     elements : geometry list }
-
-(* A 3D object described in a COLLADA file (referenced in the <Link> tag).
- * COLLADA files have a .dae file extension. Models are created in their own
- * coordinate space and then located, positioned, and scaled in Google Earth.
- * See the "Topics in KML" page on Models for more detail. *)
-and model =
-  { id : object_id ;
-    altitude_mode : altitude_mode ;
-    location : Location.t ;
-    (* Describes rotation of a 3D model's coordinate system to position the
-     * object in Google Earth. *)
-    orientation : Orientation.t ;
-    (* Scales a model along the x, y, and z axes in the model's coordinate
-     * space. *)
-    scale : Scale.t ;
-    (* Specifies the file to load and optional refresh parameters. *)
-    link : Link.t ;
-    (* Specifies 0 or more <Alias> elements, each of which is a mapping for the
-     * texture file path from the original Collada file to the KML or KMZ file
-     * that contains the Model. This element allows you to move and rename
-     * texture files without having to update the original Collada file that
-     * references those textures. One <ResourceMap> element can contain
-     * multiple mappings from different (source) Collada files into the same
-     * (target) KMZ file. *)
-    resource_map : alias list }
-
-module MultiGeometry =
-struct
-  type t = multi_geometry
-end
-
-module Model =
-struct
-  type t = model
-end
 
 module Camera =
 struct
@@ -786,7 +779,7 @@ and style_map =
   { id : object_id ;
     (* At least one must be defined: *)
     normal_pair : pair option ;
-    highlighted_pair : pair option }
+    highlight_pair : pair option }
 
 (* A Style defines an addressable style group that can be referenced by
  * StyleMaps and Features. Styles affect how Geometry is presented in the 3D
@@ -805,6 +798,10 @@ and style =
     list_style : ListStyle.t option }
 
 type style_selector = Style of style | StyleMap of style_map
+
+type snippet =
+  { max_lines : int option ;
+    text : string }
 
 (* This is an abstract element and cannot be used directly in a KML file. The
  * following diagram shows how some of a Feature's elements appear in Google
@@ -846,7 +843,7 @@ and feature_params =
      * balloon. This tag does not support HTML markup. <Snippet> has a maxLines
      * attribute, an integer that specifies the maximum number of lines to
      * display. *)
-    snippet : string option ;
+    snippet : snippet option ;
     (* User-supplied content that appears in the description balloon. *)
     description : string option ;
     (* Defines a viewpoint associated with any element derived from Feature.
@@ -927,7 +924,7 @@ type image_pyramid =
        be a power of 2. A tile size of 256 (the default) or 512 is recommended.
        The original image is divided into tiles of this size, at varying
        resolutions. *)
-    tile_size : int option ;
+    tile_size : int ;
     (* Width in pixels of the original image. *)
     max_width : int option ;
     (* Height in pixels of the original image. *)
@@ -975,7 +972,7 @@ struct
        * draws an icon to mark the position of the PhotoOverlay. The icon drawn
        * is specified by the <styleUrl> and <StyleSelector> fields, just as it is
        * for <Placemark>. *)
-      point : coordinate ;
+      point : Point.t ;
       (* The PhotoOverlay is projected onto the <shape>. *)
       shape : shape }
 end
@@ -1112,16 +1109,6 @@ and feature =
   | PhotoOverlay of PhotoOverlay.t
   | ScreenOverlay of ScreenOverlay.t
 
-module Folder =
-struct
-  type t = folder
-end
-
-module Document =
-struct
-  type t = document
-end
-
 (* Specifies an addition, change, or deletion to KML data that has already been
  * loaded using the specified URL. The <targetHref> specifies the .kml or .kmz
  * file whose data (within Google Earth) is to be modified. <Update> is always
@@ -1131,17 +1118,9 @@ end
  *
  * Can contain any number of <Change>, <Create>, and <Delete> elements, which
  * will be processed in order. *)
-type update =
-  { changes : (update_operation * (*kml_data*) unit) array }
+type update = update_operation * kml_data
 and update_operation = Change | Create | Delete
-
-(* You can control the snippet for the network link from the server, so that
- * changes made to the snippet on the client side are overridden by the server.
- * <linkSnippet> has a maxLines attribute, an integer that specifies the
- * maximum number of lines to display. *)
-type link_snippet =
-  { max_lines : int option ;
-    text : string }
+and kml_data = unit (* TODO *)
 
 module NetworkLinkControl =
 struct
@@ -1175,7 +1154,11 @@ struct
        * that changes made to the description on the client side are overridden
        * by the server. *)
       link_description : string option ;
-      link_snippet : link_snippet option ;
+      (* You can control the snippet for the network link from the server, so
+       * that changes made to the snippet on the client side are overridden by
+       * the server.  <linkSnippet> has a maxLines attribute, an integer that
+       * specifies the maximum number of lines to display. *)
+      link_snippet : snippet option ;
       (* You can specify a date/time at which the link should be refreshed. This
        * specification takes effect only if the <refreshMode> in <Link> has a
        * value of onExpire. See <refreshMode> *)
@@ -1183,7 +1166,7 @@ struct
       (* With <Update>, you can specify any number of Change, Create, and Delete
        * tags for a .kml file or .kmz archive that has previously been loaded
        * with a network link. See <Update>. *)
-      update : update option ;
+      updates : update list ;
       abstract_view : abstract_view option }
 end
 
