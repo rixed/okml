@@ -23,10 +23,16 @@ SOURCES = \
 	src/okmlType.ml \
 	src/okml.ml
 
-INSTALLED = \
+INSTALLED_LIB = \
 	META \
 	src/okml.cma \
-	src/okml.cmxa
+	src/okml.cmxa \
+	$(SOURCES:.ml=.cmo) \
+	$(SOURCES:.ml=.cmx) \
+	$(SOURCES:.ml=.cmi) \
+	src/okml.a
+
+INSTALLED = $(INSTALLED_LIB)
 
 prefix = @prefix@
 
@@ -100,10 +106,10 @@ check: unit-check
 
 # Installation
 
-install-lib: META
+install-lib: $(INSTALLED_LIB)
 	ocamlfind install okml $^
 
-install: install-bin install-lib
+install: install-lib
 
 uninstall:
 	@echo Uninstalling
