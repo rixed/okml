@@ -254,6 +254,7 @@ open Xml
 
 module Xml : sig
   val of_kml : kml -> xml
+  val to_string : xml -> string
 end =
 struct
   let xmlns = "http://www.opengis.net/kml/2.2"
