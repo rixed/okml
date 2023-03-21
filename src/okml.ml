@@ -4,6 +4,20 @@ open OkmlType
  * Constructors
  *)
 
+let rec string_of_float f =
+  if f = 0. then "0" else  (* take good care of ~-.0. *)
+  if f < 0. then "-"^ string_of_float (~-.f) else
+  let s = Printf.sprintf "%.5f" f in (* limit number of significant digits to reduce page size *)
+  (* chop trailing zeros and trailing dot *)
+  let rec chop last l =
+    let c = s.[l] in
+    if last || l < 1 || c <> '0' && c <> '.' then (
+      if l = String.length s - 1 then s else
+      String.sub s 0 (l + 1)
+    ) else
+      chop (c = '.') (l - 1) in
+  chop false (String.length s - 1)
+
 let color ?(a=255) ~r ~g ~b () = { a ; r ; g ; b }
 
 let string_of_color c =
