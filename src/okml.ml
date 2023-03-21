@@ -26,6 +26,9 @@ let string_of_color c =
 let default_bg_color = color ~r:255 ~g:255 ~b:255 ()
 let default_text_color = color ~r:0 ~g:0 ~b:0 ()
 
+let coordinates ~lat ~lon ?(alt=0.) () =
+  { lat ; lon ; alt }
+
 let balloon_style ?id ?(bg_color=default_bg_color) ?(text_color=default_text_color) ?(display_mode=Default) text =
   BalloonStyle.{ id ; bg_color ; text_color ; text ; display_mode }
 
@@ -33,28 +36,28 @@ let camera ?id ?time_primitive ?(longitude=0.) ?(latitude=0.) ?(altitude=0.) ?(h
   Camera.{ id ; time_primitive ; longitude ; latitude ; altitude ; heading ;
            tilt ; roll ; altitude_mode }
 
-let feature_params ?id ~name ?(visibility=true) ?(open_=false) ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?(style_selectors=[]) ?region () =
+let feature_params ?id ?name ?(visibility=true) ?(open_=false) ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?(style_selectors=[]) ?region () =
   { id ; name ; visibility ; open_ ; address ; phone_number ; snippet ;
     description ; abstract_view ; time_primitive ; style_url ; style_selectors ;
     region }
 
-let document ?id ~name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region schemas features =
+let document ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region ?(schemas=[]) ?(features=[]) () =
   { feature =
-      feature_params ?id ~name ?visibility ?open_ ?address
+      feature_params ?id ?name ?visibility ?open_ ?address
                      ?phone_number ?snippet ?description ?abstract_view
                      ?time_primitive ?style_url ?style_selectors ?region () ;
     schemas ; features }
 
-let folder ?id ~name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region features =
+let folder ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region features =
   { feature =
-      feature_params ?id ~name ?visibility ?open_ ?address
+      feature_params ?id ?name ?visibility ?open_ ?address
                      ?phone_number ?snippet ?description ?abstract_view
                      ?time_primitive ?style_url ?style_selectors ?region () ;
     features }
 
-let overlay_params ?id ~name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region ?(color=color ~r:255 ~g:255 ~b:255 ()) ?(draw_order=0) ~icon =
+let overlay_params ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region ?(color=color ~r:255 ~g:255 ~b:255 ()) ?(draw_order=0) ~icon =
   { feature =
-      feature_params ?id ~name ?visibility ?open_ ?address
+      feature_params ?id ?name ?visibility ?open_ ?address
                      ?phone_number ?snippet ?description ?abstract_view
                      ?time_primitive ?style_url ?style_selectors ?region () ;
     color ; draw_order ; icon }
@@ -62,10 +65,10 @@ let overlay_params ?id ~name ?visibility ?open_ ?address ?phone_number ?snippet 
 let lat_lon_box ?(north=0.) ?(south=0.) ?(east=0.) ?(west=0.) ?(rotation=0.) () =
   { north ; south ; east ; west ; rotation }
 
-let ground_overlay ?id ~name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region ?color ?draw_order ~icon ?(altitude=0.) ?(altitude_mode=ClampToGround) ?lat_lon_box () =
+let ground_overlay ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region ?color ?draw_order ~icon ?(altitude=0.) ?(altitude_mode=ClampToGround) ?lat_lon_box () =
   GroundOverlay.{
     overlay =
-      overlay_params ?id ~name ?visibility ?open_ ?address ?phone_number
+      overlay_params ?id ?name ?visibility ?open_ ?address ?phone_number
                      ?snippet ?description ?abstract_view ?time_primitive
                      ?style_url ?style_selectors ?region ?color ?draw_order
                      ~icon ;
@@ -132,10 +135,10 @@ let model ?id ?(altitude_mode=ClampToGround) ?(location=location ~longitude:0. ~
 let multi_geometry ?id elements =
   { id ; elements }
 
-let network_link ?id ~name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region ?(refresh_visibility=false) ?(fly_to_view=false) ~link =
+let network_link ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region ?(refresh_visibility=false) ?(fly_to_view=false) ~link =
   NetworkLink.{
     feature =
-      feature_params ?id ~name ?visibility ?open_ ?address
+      feature_params ?id ?name ?visibility ?open_ ?address
                      ?phone_number ?snippet ?description ?abstract_view
                      ?time_primitive ?style_url ?style_selectors ?region () ;
     refresh_visibility ; fly_to_view ; link }
@@ -148,19 +151,19 @@ let network_link_control ?(min_refresh_period=0.) ?(max_session_length= ~-.1.) ?
 let view_volume ?(left_fov=0.) ?(right_fov=0.) ?(bottom_fov=0.) ?(top_fov=0.) ?(near=0.) () =
   { left_fov ; right_fov ; bottom_fov ; top_fov ; near }
 
-let photo_overlay ?id ~name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region ?color ?draw_order ~icon ?(rotation=0.) ?(view_volume=view_volume ()) ?image_pyramid ?(shape=Rectangle) ~point =
+let photo_overlay ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region ?color ?draw_order ~icon ?(rotation=0.) ?(view_volume=view_volume ()) ?image_pyramid ?(shape=Rectangle) ~point =
   PhotoOverlay.{
     overlay =
-      overlay_params ?id ~name ?visibility ?open_ ?address ?phone_number
+      overlay_params ?id ?name ?visibility ?open_ ?address ?phone_number
                      ?snippet ?description ?abstract_view ?time_primitive
                      ?style_url ?style_selectors ?region ?color ?draw_order
                      ~icon ;
     rotation ; view_volume ; image_pyramid ; point ; shape }
 
-let placemark ?id ~name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region geometries =
+let placemark ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region geometries =
   Placemark.{
     feature =
-      feature_params ?id ~name ?visibility ?open_ ?address
+      feature_params ?id ?name ?visibility ?open_ ?address
                      ?phone_number ?snippet ?description ?abstract_view
                      ?time_primitive ?style_url ?style_selectors ?region () ;
     geometries }
@@ -192,10 +195,10 @@ let simple_field ?(display_name) ~type_ ~name =
 let schema ~id ?name simple_fields =
   Schema.{ id ; name ; simple_fields }
 
-let screen_overlay ?id ~name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region ?color ?draw_order ~icon ~overlay_xy ~screen_xy ~rotation_xy ?(rotation=0.) ~size =
+let screen_overlay ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region ?color ?draw_order ~icon ~overlay_xy ~screen_xy ~rotation_xy ?(rotation=0.) ~size =
   ScreenOverlay.{
     overlay =
-      overlay_params ?id ~name ?visibility ?open_ ?address ?phone_number
+      overlay_params ?id ?name ?visibility ?open_ ?address ?phone_number
                      ?snippet ?description ?abstract_view ?time_primitive
                      ?style_url ?style_selectors ?region ?color ?draw_order
                      ~icon ;
@@ -568,7 +571,7 @@ struct
 
   let items_of_feature f =
     let items =
-      [ Element ("name", [], [ PCData f.name ]) ] |>
+      add_opt f.name (of_string "name") [] |>
       add ~if_not:true f.visibility (of_bool "visibility") |>
       add ~if_not:false f.open_ (of_bool "open") |>
       add_opt f.address (of_string "address") |>
@@ -584,7 +587,7 @@ struct
     ) items f.style_selectors
 
   let string_of_coordinates c =
-    let s = Printf.sprintf "%g,%g" c.lat c.lon in
+    let s = Printf.sprintf "%g,%g" c.lon c.lat in
     if c.alt <> 0. then s ^ Printf.sprintf ",%g" c.alt
     else s
 

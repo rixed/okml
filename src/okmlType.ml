@@ -810,7 +810,7 @@ and feature_params =
   { id : object_id ;
     (* User-defined text displayed in the 3D viewer as the label for the object
      * (for example, for a Placemark, Folder, or NetworkLink). *)
-    name : string ;
+    name : string option ;
     (* Boolean value. Specifies whether the feature is drawn in the 3D viewer
      * when it is initially loaded. In order for a feature to be visible, the
      * <visibility> tag of all its ancestors must also be set to 1. In the
