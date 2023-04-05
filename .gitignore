@@ -5,7 +5,6 @@ Makefile
 autom4te.cache
 config.log
 config.status
-configure
 *.annot
 *.cmi
 *.cmt
