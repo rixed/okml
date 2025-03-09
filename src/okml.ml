@@ -55,7 +55,7 @@ let folder ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet ?descrip
                      ?time_primitive ?style_url ?style_selectors ?region () ;
     features }
 
-let overlay_params ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region ?(color=color ~r:255 ~g:255 ~b:255 ()) ?(draw_order=0) ~icon =
+let overlay_params ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region ?(color=color ~r:255 ~g:255 ~b:255 ()) ?(draw_order=0) icon =
   { feature =
       feature_params ?id ?name ?visibility ?open_ ?address
                      ?phone_number ?snippet ?description ?abstract_view
@@ -71,7 +71,7 @@ let ground_overlay ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet 
       overlay_params ?id ?name ?visibility ?open_ ?address ?phone_number
                      ?snippet ?description ?abstract_view ?time_primitive
                      ?style_url ?style_selectors ?region ?color ?draw_order
-                     ~icon ;
+                     icon ;
     altitude ; altitude_mode ; lat_lon_box }
 
 let icon ?id ~href ?(x=0) ?(y=0) ?(w= -1) ?(h= -1) ?(refresh_mode=OnChange) ?(refresh_interval=4.) ?(view_refresh_mode=Never) ?(view_refresh_time=4.) ?(view_bound_scale=1.) ?view_format ?http_query () =
@@ -113,7 +113,7 @@ let link ?id ?href ?(refresh_mode=OnChange) ?(refresh_interval=4.) ?(view_refres
 let list_style ?id ?(list_item_type=Check) ?(bg_color=default_bg_color) item_icons =
   ListStyle.{ id ; list_item_type ; bg_color ; item_icons }
 
-let look_at ?id ?time_primitive ?(longitude=0.) ?(latitude=0.) ?(altitude=0.) ?(heading=0.) ?(tilt=0.) ?(altitude_mode=ClampToGround) ~range =
+let look_at ?id ?time_primitive ?(longitude=0.) ?(latitude=0.) ?(altitude=0.) ?(heading=0.) ?(tilt=0.) ?(altitude_mode=ClampToGround) range =
   LookAt.{
     id ; time_primitive ; longitude ; latitude ; altitude ; heading ; tilt ;
     range ; altitude_mode }
@@ -127,7 +127,7 @@ let location ?(altitude=0.) ~longitude ~latitude () =
 let scale ?(x=1.) ?(y=1.) ?(z=1.) () =
   Scale.{ x ; y ; z }
 
-let model ?id ?(altitude_mode=ClampToGround) ?(location=location ~longitude:0. ~latitude:0. ()) ?(orientation=orientation ()) ?(scale=scale()) ~link ~resource_map =
+let model ?id ?(altitude_mode=ClampToGround) ?(location=location ~longitude:0. ~latitude:0. ()) ?(orientation=orientation ()) ?(scale=scale()) link resource_map =
   Model.{
     id ; altitude_mode ; location ; orientation ; scale ; link ;
     resource_map }
@@ -135,7 +135,7 @@ let model ?id ?(altitude_mode=ClampToGround) ?(location=location ~longitude:0. ~
 let multi_geometry ?id elements =
   { id ; elements }
 
-let network_link ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region ?(refresh_visibility=false) ?(fly_to_view=false) ~link =
+let network_link ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region ?(refresh_visibility=false) ?(fly_to_view=false) link =
   NetworkLink.{
     feature =
       feature_params ?id ?name ?visibility ?open_ ?address
@@ -151,13 +151,13 @@ let network_link_control ?(min_refresh_period=0.) ?(max_session_length= ~-.1.) ?
 let view_volume ?(left_fov=0.) ?(right_fov=0.) ?(bottom_fov=0.) ?(top_fov=0.) ?(near=0.) () =
   { left_fov ; right_fov ; bottom_fov ; top_fov ; near }
 
-let photo_overlay ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region ?color ?draw_order ~icon ?(rotation=0.) ?(view_volume=view_volume ()) ?image_pyramid ?(shape=Rectangle) ~point =
+let photo_overlay ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region ?color ?draw_order ~icon ?(rotation=0.) ?(view_volume=view_volume ()) ?image_pyramid ?(shape=Rectangle) point =
   PhotoOverlay.{
     overlay =
       overlay_params ?id ?name ?visibility ?open_ ?address ?phone_number
                      ?snippet ?description ?abstract_view ?time_primitive
                      ?style_url ?style_selectors ?region ?color ?draw_order
-                     ~icon ;
+                     icon ;
     rotation ; view_volume ; image_pyramid ; point ; shape }
 
 let placemark ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region geometries =
@@ -171,7 +171,7 @@ let placemark ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet ?desc
 let point ?id ?(extrude=false) ?(altitude_mode=ClampToGround) coordinates =
   Point.{ id ; extrude ; altitude_mode ; coordinates }
 
-let polygon ?id ?(extrude=false) ?(tessellate=false) ?(altitude_mode=ClampToGround) ~outer_boundary_is ~inner_boundary_is =
+let polygon ?id ?(extrude=false) ?(tessellate=false) ?(altitude_mode=ClampToGround) outer_boundary_is inner_boundary_is =
   Polygon.{
     id ; extrude ; tessellate ; altitude_mode ; outer_boundary_is ;
     inner_boundary_is }
@@ -186,22 +186,22 @@ let lat_lon_alt_box ~north ~south ~east ~west ?(min_altitude=0.) ?(max_altitude=
 let lod ?(min_lod_pixels=0.) ?(max_lod_pixels=1.) ?(min_fade_extent=0.) ?(max_fade_extent=0.) () =
   { min_lod_pixels ; max_lod_pixels ; min_fade_extent ; max_fade_extent }
 
-let region ?id ~lat_lon_alt_box ~lod =
+let region ?id lat_lon_alt_box lod =
   Region.{ id ; lat_lon_alt_box ; lod }
 
-let simple_field ?(display_name) ~type_ ~name =
+let simple_field ?(display_name) type_ name =
   { type_ ; name ; display_name }
 
 let schema ~id ?name simple_fields =
   Schema.{ id ; name ; simple_fields }
 
-let screen_overlay ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region ?color ?draw_order ~icon ~overlay_xy ~screen_xy ~rotation_xy ?(rotation=0.) ~size =
+let screen_overlay ?id ?name ?visibility ?open_ ?address ?phone_number ?snippet ?description ?abstract_view ?time_primitive ?style_url ?style_selectors ?region ?color ?draw_order ~icon ~overlay_xy ~screen_xy ~rotation_xy ?(rotation=0.) size =
   ScreenOverlay.{
     overlay =
       overlay_params ?id ?name ?visibility ?open_ ?address ?phone_number
                      ?snippet ?description ?abstract_view ?time_primitive
                      ?style_url ?style_selectors ?region ?color ?draw_order
-                     ~icon ;
+                     icon ;
     overlay_xy ; screen_xy ; rotation_xy ; size ; rotation }
 
 let style ?id ?icon_style ?label_style ?line_style ?poly_style ?balloon_style ?list_style () =
@@ -328,8 +328,8 @@ struct
   let of_datetime name ?(attr=[]) d =
     Element (name, attr, [ PCData (string_of_datetime d) ])
 
-  let of_timespan t =
-    add_opt t.TimeSpan.begin_ (of_datetime "begin") [] |>
+  let of_timespan (t : TimeSpan.t) =
+    add_opt t.begin_ (of_datetime "begin") [] |>
     add_opt t.end_ (of_datetime "end") |>
     of_object "TimeSpan" t.id
 
@@ -346,8 +346,8 @@ struct
     | TimeSpan t -> of_timespan t
     | TimeStamp t -> of_timestamp t
 
-  let of_lookat l =
-    add_opt l.LookAt.time_primitive of_time_primitive [] |>
+  let of_lookat (l : LookAt.t) =
+    add_opt l.time_primitive of_time_primitive [] |>
     add ~if_not:0. l.longitude (of_float "longitude") |>
     add ~if_not:0. l.latitude (of_float "latitude") |>
     add ~if_not:0. l.altitude (of_float "altitude") |>
@@ -357,8 +357,8 @@ struct
     add ~if_not:ClampToGround l.altitude_mode of_altitude_mode |>
     of_object "LookAt" l.id
 
-  let of_camera c =
-    add_opt c.Camera.time_primitive of_time_primitive [] |>
+  let of_camera (c : Camera.t) =
+    add_opt c.time_primitive of_time_primitive [] |>
     add ~if_not:0. c.longitude (of_float "longitude") |>
     add ~if_not:0. c.latitude (of_float "latitude") |>
     add ~if_not:0. c.altitude (of_float "altitude") |>
@@ -391,8 +391,8 @@ struct
       add ~if_not:0. l.max_fade_extent (of_float "maxFadeExtent") in
     Element ("Lod", [], items)
 
-  let of_region r =
-    [ of_lat_lon_alt_box r.Region.lat_lon_alt_box ] |>
+  let of_region (r : Region.t) =
+    [ of_lat_lon_alt_box r.lat_lon_alt_box ] |>
     add_opt r.lod of_lod |>
     of_object "Region" r.id
 
@@ -406,9 +406,8 @@ struct
       | Random -> "random" in
     of_string "colorMode" s
 
-  let items_of_color_style s =
-    add ~if_not:default_bg_color
-            s.ColorStyle.color (of_color "bgColor") [] |>
+  let items_of_color_style (s : ColorStyle.t) =
+    add ~if_not:default_bg_color s.color (of_color "bgColor") [] |>
     add ~if_not:Normal s.color_mode of_color_mode
 
   let of_refresh_mode m =
@@ -428,8 +427,8 @@ struct
       | OnRegion -> "onRegion" in
     of_string "viewRefreshMode" s
 
-  let of_icon i =
-    add i.Icon.href (of_string "href") [] |>
+  let of_icon (i : Icon.t) =
+    add i.href (of_string "href") [] |>
     add ~if_not:0 i.x (of_int "gx:x") |>
     add ~if_not:0 i.y (of_int "gx:y") |>
     add ~if_not:~-1 i.w (of_int "gx:w") |>
@@ -464,23 +463,23 @@ struct
     add_opt s.hot_spot (of_xy "hotSpot") |>
     of_object "IconStyle" s.color_style.id
 
-  let item_of_color_style s =
+  let item_of_color_style (s : ColorStyle.t) =
     add ~if_not:default_bg_color
-            s.ColorStyle.color (of_color "color") [] |>
+            s.color (of_color "color") [] |>
     add ~if_not:Normal s.color_mode of_color_mode
 
-  let of_label_style s =
-    item_of_color_style s.LabelStyle.color_style |>
+  let of_label_style (s : LabelStyle.t) =
+    item_of_color_style s.color_style |>
     add ~if_not:1. s.scale (of_float "scale") |>
     of_object "LabelStyle" s.color_style.id
 
-  let of_line_style s =
-    item_of_color_style s.LineStyle.color_style |>
+  let of_line_style (s : LineStyle.t) =
+    item_of_color_style s.color_style |>
     add ~if_not:1. s.width (of_float "width") |>
     of_object "LineStyle" s.color_style.id
 
-  let of_poly_style s =
-    item_of_color_style s.PolyStyle.color_style |>
+  let of_poly_style (s : PolyStyle.t) =
+    item_of_color_style s.color_style |>
     add ~if_not:true s.fill (of_bool "fill") |>
     add ~if_not:true s.outline (of_bool "outline") |>
     of_object "PolyStyle" s.color_style.id
@@ -492,9 +491,9 @@ struct
       | Hide -> "hide" in
     of_string "displayMode" s
 
-  let of_balloon_style s =
+  let of_balloon_style (s : BalloonStyle.t) =
     add ~if_not:default_bg_color
-            s.BalloonStyle.bg_color (of_color "bgColor") [] |>
+            s.bg_color (of_color "bgColor") [] |>
     add ~if_not:default_text_color s.text_color (of_color "textColor") |>
     add s.text (of_string "text") |>
     add ~if_not:Default s.display_mode of_display_mode |>
@@ -511,9 +510,9 @@ struct
       | Fetching2 -> "fetching2" in
     of_string "state" s
 
-  let of_item_icon i =
+  let of_item_icon (i : ItemIcon.t) =
     let items =
-      add ~if_not:ItemIcon.Open i.ItemIcon.state of_item_icon_state [] |>
+      add ~if_not:ItemIcon.Open i.state of_item_icon_state [] |>
       add i.href (of_string "href") in
     Element ("ItemIcon", [], items)
 
@@ -526,16 +525,16 @@ struct
       | RadioFolder -> "radioFolder" in
     of_string "listItemType" s
 
-  let of_list_style s =
+  let of_list_style (s : ListStyle.t) =
     let items =
-      add ~if_not:Check s.ListStyle.list_item_type of_list_item_type [] |>
+      add ~if_not:Check s.list_item_type of_list_item_type [] |>
       add ~if_not:default_bg_color s.bg_color (of_color "bgColor") in
     List.fold_left (fun items item_icon ->
       of_item_icon item_icon :: items
     ) items s.item_icons |>
     of_object "ListStyle" s.id
 
-  let of_style s =
+  let of_style (s : style) =
     add_opt s.icon_style of_icon_style [] |>
     add_opt s.label_style of_label_style |>
     add_opt s.line_style of_line_style |>
@@ -594,17 +593,17 @@ struct
   let of_coordinates c =
     of_string "coordinates" (string_of_coordinates c)
 
-  let of_point p =
-    add ~if_not:false p.Point.extrude (of_bool "extrude") [] |>
+  let of_point (p : Point.t) =
+    add ~if_not:false p.extrude (of_bool "extrude") [] |>
     add ~if_not:ClampToGround p.altitude_mode of_altitude_mode |>
     add p.coordinates of_coordinates |>
     of_object "Point" p.id
 
-  let of_line_string s =
+  let of_line_string (s : LineString.t) =
     let coords =
       Array.fold_left (fun coords c ->
         coords ^ (if coords <> "" then " " else "") ^ string_of_coordinates c
-      ) "" s.LineString.coordinates in
+      ) "" s.coordinates in
     add ~if_not:false s.extrude (of_bool "extrude") [] |>
     add ~if_not:false s.tessellate (of_bool "tessellate") |>
     add ~if_not:ClampToGround s.altitude_mode of_altitude_mode |>
@@ -612,20 +611,20 @@ struct
     add coords (of_string "coordinates") |>
     of_object "LineString" s.id
 
-  let of_linear_ring r =
+  let of_linear_ring (r : LinearRing.t) =
     let coords =
       Array.fold_left (fun coords c ->
         coords ^ (if coords <> "" then " " else "") ^ string_of_coordinates c
-      ) "" r.LinearRing.coordinates in
+      ) "" r.coordinates in
     add ~if_not:false r.extrude (of_bool "extrude") [] |>
     add ~if_not:false r.tessellate (of_bool "tessellate") |>
     add ~if_not:ClampToGround r.altitude_mode of_altitude_mode |>
     add coords (of_string "coordinates") |>
     of_object "LinearRing" r.id
 
-  let of_polygon p =
+  let of_polygon (p : Polygon.t) =
     let items =
-      add ~if_not:false p.Polygon.extrude (of_bool "extrude") [] |>
+      add ~if_not:false p.extrude (of_bool "extrude") [] |>
       add ~if_not:false p.tessellate (of_bool "tessellate") |>
       add ~if_not:ClampToGround p.altitude_mode of_altitude_mode |>
       List.cons (Element ("outerBoundaryIs", [],
@@ -635,8 +634,8 @@ struct
     ) items p.inner_boundary_is |>
     of_object "Polygon" p.id
 
-  let of_link l =
-    add_opt l.Link.href (of_string "href") [] |>
+  let of_link (l : Link.t) =
+    add_opt l.href (of_string "href") [] |>
     add ~if_not:OnChange l.refresh_mode of_refresh_mode |>
     add ~if_not:4. l.refresh_interval (of_float "refreshInterval") |>
     add ~if_not:Never l.view_refresh_mode of_view_refresh_mode |>
@@ -646,23 +645,23 @@ struct
     add_opt l.http_query (of_string "httpQuery") |>
     of_object "Link" l.id
 
-  let of_location l =
+  let of_location (l : Location.t) =
     let items =
-      add l.Location.longitude (of_float "longitude") [] |>
+      add l.longitude (of_float "longitude") [] |>
       add l.latitude (of_float "latitude") |>
       add ~if_not:0. l.altitude (of_float "altitude") in
     Element ("Location", [], items)
 
-  let of_orientation o =
+  let of_orientation (o : Orientation.t) =
     let items =
-      add ~if_not:0. o.Orientation.heading (of_float "heading") [] |>
+      add ~if_not:0. o.heading (of_float "heading") [] |>
       add ~if_not:0. o.tilt (of_float "tilt") |>
       add ~if_not:0. o.roll (of_float "roll") in
     Element ("Orientation", [], items)
 
-  let of_scale s =
+  let of_scale (s : Scale.t) =
     let items =
-      add ~if_not:1. s.Scale.x (of_float "x") [] |>
+      add ~if_not:1. s.x (of_float "x") [] |>
       add ~if_not:1. s.y (of_float "y") |>
       add ~if_not:1. s.z (of_float "z") in
     Element ("Scale", [], items)
@@ -672,9 +671,9 @@ struct
       [ of_string "targetHref" a.target_href ;
         of_string "sourceHref" a.source_href ])
 
-  let of_model m =
+  let of_model (m : Model.t) =
     let items =
-      add ~if_not:ClampToGround m.Model.altitude_mode of_altitude_mode [] |>
+      add ~if_not:ClampToGround m.altitude_mode of_altitude_mode [] |>
       add m.location of_location |>
       add m.orientation of_orientation |>
       add m.scale of_scale |>
@@ -684,7 +683,7 @@ struct
     ) items m.resource_map |>
     of_object "Model" m.id
 
-  let rec of_multi_geometry m =
+  let rec of_multi_geometry (m : multi_geometry) =
     List.map of_geometry m.elements |>
     of_object "MultiGeometry" m.id
 
@@ -696,13 +695,13 @@ struct
     | MultiGeometry m -> of_multi_geometry m
     | Model m -> of_model m
 
-  let of_placemark p =
-    items_of_feature p.Placemark.feature @
+  let of_placemark (p : Placemark.t) =
+    items_of_feature p.feature @
     List.map of_geometry p.geometries |>
     of_object "Placemark" p.feature.id
 
-  let of_network_link l =
-    items_of_feature l.NetworkLink.feature |>
+  let of_network_link (l : NetworkLink.t) =
+    items_of_feature l.feature |>
     add ~if_not:false l.refresh_visibility (of_bool "refreshVisibility") |>
     add ~if_not:false l.fly_to_view (of_bool "flyToView") |>
     add l.link of_link |>
@@ -744,8 +743,8 @@ struct
     add ~if_not:LowerLeft p.grid_origin of_grid_origin |>
     of_object "ImagePyramid" None
 
-  let of_photo_overlay o =
-    items_of_overlay o.PhotoOverlay.overlay |>
+  let of_photo_overlay (o : PhotoOverlay.t) =
+    items_of_overlay o.overlay |>
     add ~if_not:0. o.rotation (of_float "rotation") |>
     add o.view_volume of_view_volume |>
     add_opt o.image_pyramid of_image_pyramid |>
@@ -753,8 +752,8 @@ struct
     add ~if_not:Rectangle o.shape of_shape |>
     of_object "photoOverlay" o.overlay.feature.id
 
-  let of_screen_overlay o =
-    items_of_overlay o.ScreenOverlay.overlay |>
+  let of_screen_overlay (o : ScreenOverlay.t) =
+    items_of_overlay o.overlay |>
     add o.overlay_xy (of_xy "overlayXY") |>
     add o.screen_xy (of_xy "screenXY") |>
     add_opt o.rotation_xy (of_xy "rotationXY") |>
@@ -770,8 +769,8 @@ struct
     add ~if_not:0. b.rotation (of_float "rotation") |>
     of_object "LatLonBox" None
 
-  let of_ground_overlay o =
-    items_of_overlay o.GroundOverlay.overlay |>
+  let of_ground_overlay (o : GroundOverlay.t) =
+    items_of_overlay o.overlay |>
     add ~if_not:0. o.altitude (of_float "altitude") |>
     add ~if_not:ClampToGround o.altitude_mode of_altitude_mode |>
     add_opt o.lat_lon_box of_lat_lon_box |>
@@ -796,8 +795,8 @@ struct
       | None -> []
       | Some n -> [ of_string "displayName" n ])
 
-  let of_schema s =
-    List.map of_simple_field s.Schema.simple_fields |>
+  let of_schema (s : Schema.t) =
+    List.map of_simple_field s.simple_fields |>
     of_object "Schema" ~attr:[ "name", s.name ] (Some s.id)
 
   let rec of_folder (f : folder) =
@@ -823,9 +822,9 @@ struct
   let of_update (_op, _data) =
     assert false
 
-  let of_network_link_control c =
+  let of_network_link_control (c : NetworkLinkControl.t) =
     let items =
-      add ~if_not:0. c.NetworkLinkControl.min_refresh_period
+      add ~if_not:0. c.min_refresh_period
           (of_float "minRefreshPeriod") [] |>
       add ~if_not:~-.1. c.max_session_length (of_float "maxSessionLength") |>
       add_opt c.cookie (of_string "cookie") |>
