@@ -17,4 +17,5 @@ remove: [make "bin_dir=%{bin}%" "uninstall"]
 depends: [
   "ocamlfind" {build & >= "1.8.0"}
   "xml-light"
+  "qtest" {with-test}
 ]
